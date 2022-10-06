@@ -10,7 +10,7 @@
  *        canvas.
  * @return {string} The html.
  */
-var makeFailHTML = function(msg) {
+ var makeFailHTML = function(msg) {
   return '' +
     '<table style="background-color: #8CE; width: 100%; height: 100%;"><tr>' +
     '<td align="center">' +
@@ -44,7 +44,7 @@ var OTHER_PROBLEM = '' +
  *     context from.
  * @param {WebGLContextCreationAttirbutes} opt_attribs Any
  *     creation attributes you want to pass in.
- * @return {WebGLRenderingContext} The created context.
+ * @return {WebGL2RenderingContext} The created context.
  */
 export var setupWebGL = function(canvas, opt_attribs) {
   function showLink(str) {
@@ -73,7 +73,7 @@ export var setupWebGL = function(canvas, opt_attribs) {
  * @return {!WebGLContext} The created context.
  */
 var create3DContext = function(canvas, opt_attribs) {
-  var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+  var names = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
   var context = null;
   for (var ii = 0; ii < names.length; ++ii) {
     try {
@@ -133,12 +133,12 @@ export function loadShadersFromScripts(ids)
 
 /**
  * 
- * @param {WebGLRenderingContext} gl 
+ * @param {WebGL2RenderingContext} gl 
  * @param {string} vShaderSrc 
  * @param {string} fShaderSrc 
  * @returns {WebGLProgram}
  */
-export function buildProgramFromSources(gl, vShaderSrc, fShaderSrc) 
+export function buildProgramFromSources(gl, vShaderSrc, fShaderSrc, trfFeedbackVaryings) 
 {
   function getShader(gl, shaderSrc, type) {
       var shader = gl.createShader(type);
@@ -160,10 +160,15 @@ export function buildProgramFromSources(gl, vShaderSrc, fShaderSrc)
 
   gl.attachShader(program, vertexShader);
   gl.attachShader(program, fragmentShader);
+
+  if(trfFeedbackVaryings != null) {
+    gl.transformFeedbackVaryings(program, trfFeedbackVaryings,gl.INTERLEAVED_ATTRIBS)
+  }
+
   gl.linkProgram(program);
 
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      alert("Could not initialise shaders");
+      alert("Could not initialise shaders: " + gl.getProgramInfoLog(program));
       return null;
   }
 
