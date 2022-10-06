@@ -8,6 +8,7 @@ let inParticlesBuffer, outParticlesBuffer, quadBuffer;
 
 // Total number of particles
 const N_PARTICLES = 1000;
+//new Constant
 const SCALE = vec2(1.5, 1.5)
 
 let drawPoints = true;
