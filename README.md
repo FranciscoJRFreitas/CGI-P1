@@ -3,3 +3,4 @@ This is a Graphic Interfaces Computation project in which we have to simulate gr
 Afonso Proença 59158
 Francisco Freitas 60313
 Alteração 1
+Alteração 2
