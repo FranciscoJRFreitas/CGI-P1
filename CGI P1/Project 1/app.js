@@ -8,6 +8,7 @@ let inParticlesBuffer, outParticlesBuffer, quadBuffer;
 
 // Total number of particles
 const N_PARTICLES = 1000;
+const SCALE = vec2(1.5, 1.5)
 
 let drawPoints = true;
 let drawField = true;
@@ -99,8 +100,8 @@ function main(shaders)
         const mx = event.offsetX;
         const my = event.offsetY;
 
-        const x = ((mx / canvas.width * 2) - 1);
-        const y = (((canvas.height - my)/canvas.height * 2) -1);
+        const x = ((mx / canvas.width * 2) - 1) * 1.5;
+        const y = (((canvas.height - my)/canvas.height * 2) -1) * 1.5;
 
         return vec2(x,y);
     }
@@ -150,8 +151,6 @@ function main(shaders)
         gl.bindBuffer(gl.ARRAY_BUFFER, outParticlesBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STREAM_DRAW);
     }
-
-
 
     function animate(timestamp)
     {
@@ -226,11 +225,11 @@ function main(shaders)
         gl.useProgram(fieldProgram);
 
         // Setup attributes
-        const vPosition = gl.getAttribLocation(fieldProgram, "vPosition"); 
+        const vPosition = gl.getAttribLocation(fieldProgram, "vPosition");
 
         const scale = gl.getUniformLocation(fieldProgram, "scale");
 
-        gl.uniform2f(scale, 1.5, 1.5);
+        gl.uniform2f(scale, SCALE.x, SCALE.y);
 
         //uniform tem 4 valores e v por ser vetor
 
