@@ -27,7 +27,7 @@ function main(shaders)
     const gl = setupWebGL(canvas, {alpha: true});
 
     // Initialize GLSL programs    
-    const fieldProgram = buildProgramFromSources(gl, shaders["field-render.vert"], shaders["field-render.frag"]);
+    const fieldProgram = buildProgramFromSources(gl, shaders["field-render.vert"], shaders["field-render.frag"],["fPosition"]);
     const renderProgram = buildProgramFromSources(gl, shaders["particle-render.vert"], shaders["particle-render.frag"]);
     const updateProgram = buildProgramFromSources(gl, shaders["particle-update.vert"], shaders["particle-update.frag"], ["vPositionOut", "vAgeOut", "vLifeOut", "vVelocityOut"]);
 
@@ -227,6 +227,12 @@ function main(shaders)
 
         // Setup attributes
         const vPosition = gl.getAttribLocation(fieldProgram, "vPosition"); 
+
+        const scale = gl.getUniformLocation(fieldProgram, "scale");
+
+        gl.uniform2f(scale, 1.5, 1.5);
+
+        //uniform tem 4 valores e v por ser vetor
 
         gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
         gl.enableVertexAttribArray(vPosition);
