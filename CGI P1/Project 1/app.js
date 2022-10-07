@@ -1,5 +1,5 @@
 import { buildProgramFromSources, loadShadersFromURLS, setupWebGL } from '../libs/utils.js';
-import { vec2, flatten, subtract, dot } from '../libs/MV.js';
+import { vec2, flatten, subtract, dot, scale } from '../libs/MV.js';
 
 // Buffers: particles before update, particles after update, quad vertices
 let inParticlesBuffer, outParticlesBuffer, quadBuffer;
@@ -8,7 +8,6 @@ let inParticlesBuffer, outParticlesBuffer, quadBuffer;
 
 // Total number of particles
 const N_PARTICLES = 1000;
-
 const SCALE = vec2(1.5, 1.5)
 
 let drawPoints = true;
@@ -124,8 +123,8 @@ function main(shaders)
 
         for(let i=0; i<nParticles; ++i) {
             // position
-            const x = Math.random()-0.5;
-            const y = Math.random()-0.5;
+            const x = 2*Math.random() - 1;
+            const y = 2*Math.random() - 1;
 
             data.push(x); data.push(y);
             
