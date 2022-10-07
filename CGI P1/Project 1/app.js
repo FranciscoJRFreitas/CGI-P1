@@ -125,8 +125,10 @@ function main(shaders)
 
         for(let i=0; i<nParticles; ++i) {
             // position
-            const x = 2*Math.random() - 1;
-            const y = 2*Math.random() - 1;
+            //const x = 2*Math.random() - 1;
+            //const y = 2*Math.random() - 1;
+            const x = lastCursorLocation[0];
+            const y = lastCursorLocation[1];
 
             data.push(x); data.push(y);
             
@@ -199,7 +201,7 @@ function main(shaders)
         const vVelocity = gl.getAttribLocation(updateProgram, "vVelocity");
 
         gl.bindBuffer(gl.ARRAY_BUFFER, inParticlesBuffer);
-        
+
         gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 24, 0);
         gl.vertexAttribPointer(vAge, 1, gl.FLOAT, false, 24, 8);
         gl.vertexAttribPointer(vLife, 1, gl.FLOAT, false, 24, 12);
