@@ -30,7 +30,7 @@ function main(shaders)
     // Initialize GLSL programs    
     const fieldProgram = buildProgramFromSources(gl, shaders["field-render.vert"], shaders["field-render.frag"],["fPosition"]);
     const renderProgram = buildProgramFromSources(gl, shaders["particle-render.vert"], shaders["particle-render.frag"]);
-    const updateProgram = buildProgramFromSources(gl, shaders["particle-update.vert"], shaders["particle-update.frag"], ["vPositionOut", "vAgeOut", "vLifeOut", "vVelocityOut", "mouseLocation"]);
+    const updateProgram = buildProgramFromSources(gl, shaders["particle-update.vert"], shaders["particle-update.frag"], ["vPositionOut", "vAgeOut", "vLifeOut", "vVelocityOut"]);
 
     gl.viewport(0,0,canvas.width, canvas.height);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
