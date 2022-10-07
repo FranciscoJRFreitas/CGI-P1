@@ -16,7 +16,7 @@ varying vec2 vPositionOut;
 varying float vAgeOut;
 varying float vLifeOut;
 varying vec2 vVelocityOut;
-varying vec2 mouseLocation;
+uniform vec2 mouseLocation;
 
 // generates a pseudo random number that is a function of the argument. The argument needs to be constantly changing from call to call to generate different results
 highp float rand(vec2 co)

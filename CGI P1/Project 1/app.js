@@ -86,7 +86,7 @@ function main(shaders)
 
     canvas.addEventListener("mousemove", function(event) {
         const p = getCursorPosition(canvas, event);
-        const mouseLocation = gl.getUniformLocation(fieldProgram, "mouseLocation");
+        const mouseLocation = gl.getUniformLocation(updateProgram, "mouseLocation");
         gl.uniform2f(mouseLocation, p[0], p[1]);
         console.log(p);
     });
