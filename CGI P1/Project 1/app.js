@@ -7,7 +7,7 @@ let inParticlesBuffer, outParticlesBuffer, quadBuffer;
 // Particle system constants
 
 // Total number of particles
-const N_PARTICLES = 1000;
+const N_PARTICLES = 10;
 const SCALE = vec2(1.5, 1.5)
 
 let drawPoints = true;
@@ -30,7 +30,7 @@ function main(shaders)
     // Initialize GLSL programs    
     const fieldProgram = buildProgramFromSources(gl, shaders["field-render.vert"], shaders["field-render.frag"],["fPosition"]);
     const renderProgram = buildProgramFromSources(gl, shaders["particle-render.vert"], shaders["particle-render.frag"]);
-    const updateProgram = buildProgramFromSources(gl, shaders["particle-update.vert"], shaders["particle-update.frag"], ["vPositionOut", "vAgeOut", "vLifeOut", "vVelocityOut"]);
+    const updateProgram = buildProgramFromSources(gl, shaders["particle-update.vert"], shaders["particle-update.frag"], ["vPositionOut", "vAgeOut", "vLifeOut", "vVelocityOut", "mouseLocation"]);
 
     gl.viewport(0,0,canvas.width, canvas.height);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -86,7 +86,8 @@ function main(shaders)
 
     canvas.addEventListener("mousemove", function(event) {
         const p = getCursorPosition(canvas, event);
-
+        const mouseLocation = gl.getUniformLocation(fieldProgram, "mouseLocation");
+        gl.uniform2f(mouseLocation, p[0], p[1]);
         console.log(p);
     });
 
