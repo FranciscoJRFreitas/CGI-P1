@@ -5,10 +5,14 @@ import { vec2, flatten, subtract, dot, scale } from '../libs/MV.js';
 let inParticlesBuffer, outParticlesBuffer, quadBuffer;
 
 // Particle system constants
+const G_CONSTANT = 6.67 * 10^-11;
+const AVG_DENSITY = 5.51 * 10^3;
+const DIST_SCALE = 6.371 * 10^6;
+const MASS = 1;
 
 // Total number of particles
-const N_PARTICLES = 1000;
-const SCALE = vec2(1.5, 1.5)
+const N_PARTICLES = 100000;
+const SCALE = vec2(1.5, 1);
 
 let drawPoints = true;
 let drawField = true;

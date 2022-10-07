@@ -1,5 +1,9 @@
 precision mediump float;
 
+const int MAX_PLANETS=10;
+
+uniform float uRadius[MAX_PLANETS];
+uniform vec2 uPosition[MAX_PLANETS];
 
 // Vertex position in World Coordinates
 attribute vec2 vPosition;
