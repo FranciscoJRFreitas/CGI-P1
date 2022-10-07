@@ -7,13 +7,14 @@ let inParticlesBuffer, outParticlesBuffer, quadBuffer;
 // Particle system constants
 
 // Total number of particles
-const N_PARTICLES = 10;
+const N_PARTICLES = 1000;
 const SCALE = vec2(1.5, 1.5)
 
 let drawPoints = true;
 let drawField = true;
 
 let time = undefined;
+let lastCursorLocation = vec2(0.0);
 
 function main(shaders)
 {
@@ -86,8 +87,6 @@ function main(shaders)
 
     canvas.addEventListener("mousemove", function(event) {
         const p = getCursorPosition(canvas, event);
-        const mouseLocation = gl.getUniformLocation(updateProgram, "mouseLocation");
-        gl.uniform2f(mouseLocation, p[0], p[1]);
         console.log(p);
     });
 
@@ -96,11 +95,13 @@ function main(shaders)
 
     
     function getCursorPosition(canvas, event) {
-  
-       
+        
         const mx = event.offsetX;
         const my = event.offsetY;
 
+        lastCursorLocation[0] = (mx / canvas.width * 2) - 1;
+        lastCursorLocation[1] = (canvas.height - my)/canvas.height * 2 -1;
+        
         const x = ((mx / canvas.width * 2) - 1) * SCALE[0];
         const y = (((canvas.height - my)/canvas.height * 2) -1) * SCALE[1];
 
@@ -182,10 +183,14 @@ function main(shaders)
     {
         // Setup uniforms
         const uDeltaTime = gl.getUniformLocation(updateProgram, "uDeltaTime");
+
+        const mouseLocation = gl.getUniformLocation(updateProgram, "mouseLocation");       
         
         gl.useProgram(updateProgram);
 
         gl.uniform1f(uDeltaTime, deltaTime);
+
+        gl.uniform2f(mouseLocation, lastCursorLocation[0], lastCursorLocation[1]);
         
         // Setup attributes
         const vPosition = gl.getAttribLocation(updateProgram, "vPosition");

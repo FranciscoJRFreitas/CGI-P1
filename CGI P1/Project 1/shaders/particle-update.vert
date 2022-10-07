@@ -3,6 +3,7 @@ precision mediump float;
 /* Number of seconds (possibly fractional) that has passed since the last
    update step. */
 uniform float uDeltaTime;
+uniform vec2 mouseLocation;
 
 /* Inputs. These reflect the state of a single particle before the update. */
 
@@ -10,7 +11,6 @@ attribute vec2 vPosition;              // actual position
 attribute float vAge;                  // actual age (in seconds)
 attribute float vLife;                 // when it is supposed to die
 attribute vec2 vVelocity;              // actual speed
-uniform vec2 mouseLocation;
 
 /* Outputs. These mirror the inputs. These values will be captured into our transform feedback buffer! */
 varying vec2 vPositionOut;
