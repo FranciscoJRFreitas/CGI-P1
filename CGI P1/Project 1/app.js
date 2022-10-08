@@ -9,13 +9,20 @@ const G_CONSTANT = 6.67 * 10^-11;
 const AVG_DENSITY = 5.51 * 10^3;
 const DIST_SCALE = 6.371 * 10^6;
 const MASS = 1;
+const MAX_PLANETS = 10;
 
 // Total number of particles
-const N_PARTICLES = 100000;
-const SCALE = vec2(1.5, 1);
+const N_PARTICLES = 1000;
+
+
+let uRadius = [];
+let uPosition = [];
+let counter = 0;
+const SCALE = vec2(1.5, 1.5);
 
 let drawPoints = true;
 let drawField = true;
+let canDrawPlanets = true;
 
 let time = undefined;
 let lastCursorLocation = vec2(0.0);
@@ -87,27 +94,46 @@ function main(shaders)
     })
     
     canvas.addEventListener("mousedown", function(event) {
+        const p = getCursorPosition(canvas, event);
+        uPosition.push(p);
+        
+
     });
 
     canvas.addEventListener("mousemove", function(event) {
-        const p = getCursorPosition(canvas, event);
-        console.log(p);
+        const p = getScaledCursorPosition(canvas, event);
+        //console.log(p);
     });
 
     canvas.addEventListener("mouseup", function(event) {
+        const p = getCursorPosition(canvas, event);
+        uRadius.push(Math.sqrt(Math.pow(p[0]-uPosition[counter][0],2) + Math.pow(p[1]-uPosition[counter][1],2)));
+
+
+        counter++;
     })
 
-    
     function getCursorPosition(canvas, event) {
+        const mx = event.offsetX;
+        const my = event.offsetY;
+
+        const x = (mx / canvas.width * 2) - 1;
+        const y = (canvas.height - my)/canvas.height * 2 - 1;
+
+        return vec2(x,y);
+    }
+
+    
+    function getScaledCursorPosition(canvas, event) {
         
         const mx = event.offsetX;
         const my = event.offsetY;
 
         lastCursorLocation[0] = (mx / canvas.width * 2) - 1;
-        lastCursorLocation[1] = (canvas.height - my)/canvas.height * 2 -1;
+        lastCursorLocation[1] = (canvas.height - my)/canvas.height * 2 - 1;
         
         const x = ((mx / canvas.width * 2) - 1) * SCALE[0];
-        const y = (((canvas.height - my)/canvas.height * 2) -1) * SCALE[1];
+        const y = (((canvas.height - my)/canvas.height * 2) - 1) * SCALE[1];
 
         return vec2(x,y);
     }
@@ -121,6 +147,10 @@ function main(shaders)
         quadBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
+
+    }
+
+    function buildPlanet(){
 
     }
 
@@ -181,8 +211,13 @@ function main(shaders)
         if(drawField) drawQuad();
         updateParticles(deltaTime);
         if(drawPoints) drawParticles(outParticlesBuffer, N_PARTICLES);
+        if(canDrawPlanets) drawPlanets();
 
         swapParticlesBuffers();
+    }
+
+    function drawPlanets() {
+
     }
 
     function updateParticles(deltaTime)
