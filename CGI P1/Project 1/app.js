@@ -95,6 +95,7 @@ function main(shaders)
     
     canvas.addEventListener("mousedown", function(event) {
         const p = getCursorPosition(canvas, event);
+        if(canDrawPlanets)
         uPosition.push(p);
         
 
@@ -107,11 +108,19 @@ function main(shaders)
 
     canvas.addEventListener("mouseup", function(event) {
         const p = getCursorPosition(canvas, event);
-        uRadius.push(Math.sqrt(Math.pow(p[0]-uPosition[counter][0],2) + Math.pow(p[1]-uPosition[counter][1],2)));
 
-
-        counter++;
+        if(canDrawPlanets) {
+            uRadius.push(Math.sqrt(Math.pow(p[0]-uPosition[counter][0],2) + Math.pow(p[1]-uPosition[counter][1],2)));
+            const pos = gl.getUniformLocation(fieldProgram, "uPosition[" + counter + "]");
+            const rad = gl.getUniformLocation(fieldProgram, "uRadius[" + counter + "]");
+            // Send the corresponding values to the GLSL program
+            gl.uniform2fv(pos, uPosition[counter]);
+            gl.uniform1f(rad, uRadius[counter]);
+            counter++;
+            if(counter == 10)    canDrawPlanets = false;
+        }
     })
+
 
     function getCursorPosition(canvas, event) {
         const mx = event.offsetX;
@@ -147,10 +156,6 @@ function main(shaders)
         quadBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
-
-    }
-
-    function buildPlanet(){
 
     }
 
