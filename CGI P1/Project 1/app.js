@@ -90,6 +90,8 @@ function main(shaders)
                 drawPoints  = !drawPoints;
                 break; 
             case 'Shift':
+                
+                break;
         }
     })
     
@@ -97,8 +99,6 @@ function main(shaders)
         const p = getCursorPosition(canvas, event);
         if(canDrawPlanets)
         uPosition.push(p);
-        
-
     });
 
     canvas.addEventListener("mousemove", function(event) {
@@ -121,7 +121,6 @@ function main(shaders)
         }
     })
 
-
     function getCursorPosition(canvas, event) {
         const mx = event.offsetX;
         const my = event.offsetY;
@@ -132,7 +131,6 @@ function main(shaders)
         return vec2(x,y);
     }
 
-    
     function getScaledCursorPosition(canvas, event) {
         
         const mx = event.offsetX;
@@ -166,8 +164,10 @@ function main(shaders)
             // position
             //const x = 2*Math.random() - 1;
             //const y = 2*Math.random() - 1;
-            const x = lastCursorLocation[0];
-            const y = lastCursorLocation[1];
+            //const x = lastCursorLocation[0];
+            //const y = lastCursorLocation[1];
+            const x = 0;
+            const y = 0;
 
             data.push(x); data.push(y);
             
@@ -195,8 +195,7 @@ function main(shaders)
         gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STREAM_DRAW);
     }
 
-    function animate(timestamp)
-    {
+    function animate(timestamp)  {
         let deltaTime = 0;
 
         if(time === undefined) {        // First time
@@ -222,6 +221,7 @@ function main(shaders)
     }
 
     function drawPlanets() {
+
 
     }
 
@@ -279,9 +279,9 @@ function main(shaders)
         // Setup attributes
         const vPosition = gl.getAttribLocation(fieldProgram, "vPosition");
 
-        const scale = gl.getUniformLocation(fieldProgram, "scale");
+        const uScale = gl.getUniformLocation(fieldProgram, "uScale");
 
-        gl.uniform2f(scale, SCALE[0], SCALE[1]);
+        gl.uniform2f(uScale, SCALE[0], SCALE[1]);
 
         //uniform tem 4 valores e v por ser vetor
 
@@ -299,11 +299,17 @@ function main(shaders)
 
         // Setup attributes
         const vPosition = gl.getAttribLocation(renderProgram, "vPosition");
+        const fLeft = gl.getAttribLocation(renderProgram, "fLeft");
+        const fTotal = gl.getAttribLocation(renderProgram, "fTotal");
 
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
         gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 24, 0);
+        gl.vertexAttribPointer(fLeft, 1, gl.FLOAT, false, 24, 8);
+        gl.vertexAttribPointer(fTotal, 1, gl.FLOAT, false, 24, 12);
         gl.enableVertexAttribArray(vPosition);
+        gl.enableVertexAttribArray(fLeft);
+        gl.enableVertexAttribArray(fTotal);
 
         gl.drawArrays(gl.POINTS, 0, nParticles);
     }
