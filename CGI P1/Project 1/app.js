@@ -6,8 +6,7 @@ let inParticlesBuffer, outParticlesBuffer, quadBuffer;
 
 // Particle system constants
 
-const MASS = 1;
-const MAX_PLANETS = 10;
+const DIST_SCALE = 6371000.0;
 
 // Total number of particles
 const N_PARTICLES = 10000;
@@ -125,7 +124,7 @@ function main(shaders)
         const p = getCursorPosition(canvas, event);
 
         if(canDrawPlanets) {
-            uRadius.push(Math.sqrt(Math.pow(p[0]-uPosition[counter][0],2) + Math.pow(p[1]-uPosition[counter][1],2)));
+            uRadius.push(DIST_SCALE * Math.sqrt(Math.pow(p[0]-uPosition[counter][0],2) + Math.pow(p[1]-uPosition[counter][1],2)));
             const pos = gl.getUniformLocation(fieldProgram, "uPosition[" + counter + "]");
             const rad = gl.getUniformLocation(fieldProgram, "uRadius[" + counter + "]");
             // Send the corresponding values to the GLSL program
@@ -178,7 +177,7 @@ function main(shaders)
             data.push(0.0);
 
             // life
-            const life = 10.0 + Math.random()*2.0;
+            const life = 10.0;
             data.push(life);
 
             // velocity
@@ -329,7 +328,7 @@ function main(shaders)
         const N_VERTICES = 60;
         for(let i = 0; i < N_VERTICES; i++){
             let angle = 2.0 * Math.PI * i/N_VERTICES;
-            vertices.push(vec2(0.8 * Math.cos(angle), 0.8 * Math.sin(angle))); //Coordinates for the second polygon
+            vertices.push(vec2(0.8 * Math.cos(angle), 0.8 * Math.sin(angle)));
         }
 
         gl.useProgram(fieldProgram);

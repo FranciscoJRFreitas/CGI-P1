@@ -1,5 +1,8 @@
 precision highp float;
 
+const float minLife = 2.0;
+const float maxLife = 20.0;
+
 /* Number of seconds (possibly fractional) that has passed since the last
    update step. */
 uniform float uDeltaTime;
@@ -31,15 +34,18 @@ highp float rand(vec2 co)
     return fract(sin(sn) * c);
 }
 
+vec2 net_force(vPosition) {
+   return vec2(0.0);
+}
+
 void main() {
 
    /* Update parameters according to our simple rules.*/
-   vPositionOut = vPosition + vVelocity * uDeltaTime;
+   vPositionOut = vPosition + vVelocity * uDeltaTime; //p(t+h) = p(t) + v(t) * h 
    vAgeOut = vAge + uDeltaTime;
-   vLifeOut = vLife;
+   vLifeOut = minLife + rand(vPosition) * (maxLife - minLife);
 
-   vec2 accel = vec2(0.0);
-   vVelocityOut = vVelocity /*1.002 -> aumenta velocidade particulas*/ + accel * uDeltaTime;
+   vVelocityOut = vVelocity + net_force(vPosition) * uDeltaTime;
       
    if (vAgeOut >= vLife) {
       vPositionOut = mouseLocation;
