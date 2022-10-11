@@ -5,24 +5,24 @@ import { vec2, flatten, subtract, dot, scale } from '../libs/MV.js';
 let inParticlesBuffer, outParticlesBuffer, quadBuffer;
 
 // Particle system constants
-const G_CONSTANT = 6.67 * 10^-11;
-const AVG_DENSITY = 5.51 * 10^3;
-const DIST_SCALE = 6.371 * 10^6;
+
 const MASS = 1;
 const MAX_PLANETS = 10;
 
 // Total number of particles
-const N_PARTICLES = 1000;
+const N_PARTICLES = 10000;
 
 
 let uRadius = [];
 let uPosition = [];
 let counter = 0;
-const SCALE = vec2(1.5, 1.5);
+let beamAngle = Math.PI;
+
 
 let drawPoints = true;
 let drawField = true;
 let canDrawPlanets = true;
+let getCursor = false;
 
 let time = undefined;
 let lastCursorLocation = vec2(0.0);
@@ -40,7 +40,7 @@ function main(shaders)
     const gl = setupWebGL(canvas, {alpha: true});
 
     // Initialize GLSL programs    
-    const fieldProgram = buildProgramFromSources(gl, shaders["field-render.vert"], shaders["field-render.frag"],["fPosition"]);
+    const fieldProgram = buildProgramFromSources(gl, shaders["field-render.vert"], shaders["field-render.frag"]);
     const renderProgram = buildProgramFromSources(gl, shaders["particle-render.vert"], shaders["particle-render.frag"]);
     const updateProgram = buildProgramFromSources(gl, shaders["particle-update.vert"], shaders["particle-update.frag"], ["vPositionOut", "vAgeOut", "vLifeOut", "vVelocityOut"]);
 
@@ -68,8 +68,16 @@ function main(shaders)
             case "PageDown":
                 break;
             case "ArrowUp":
+                if(beamAngle + 0.1 <= Math.PI)
+                    beamAngle += 0.1;
+                else
+                    beamAngle = Math.PI;
                 break;
             case "ArrowDown":
+                if(beamAngle - 0.1 >= -Math.PI)
+                    beamAngle -= 0.1;
+                else
+                    beamAngle = -Math.PI;
                 break;
             case "ArrowLeft":
                 break;
@@ -90,10 +98,17 @@ function main(shaders)
                 drawPoints  = !drawPoints;
                 break; 
             case 'Shift':
-                
+                getCursor = true;
                 break;
         }
     })
+
+    window.addEventListener("keyup", function(event) {
+        console.log(event.key);
+        switch(event.key) {
+            case 'Shift':
+                getCursor = false;
+        }})
     
     canvas.addEventListener("mousedown", function(event) {
         const p = getCursorPosition(canvas, event);
@@ -102,8 +117,8 @@ function main(shaders)
     });
 
     canvas.addEventListener("mousemove", function(event) {
-        const p = getScaledCursorPosition(canvas, event);
-        //console.log(p);
+        if(getCursor)
+        getScaledCursorPosition(canvas, event);
     });
 
     canvas.addEventListener("mouseup", function(event) {
@@ -147,27 +162,15 @@ function main(shaders)
 
     window.requestAnimationFrame(animate);
 
-    function buildQuad() {
-        const vertices = [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0,
-                          -1.0, 1.0,  1.0, -1.0, 1.0,  1.0];
-        
-        quadBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
-
-    }
-
     function buildParticleSystem(nParticles) {
         const data = [];
 
         for(let i=0; i<nParticles; ++i) {
             // position
-            //const x = 2*Math.random() - 1;
-            //const y = 2*Math.random() - 1;
+            const x = 2*Math.random() - 1;
+            const y = 2*Math.random() - 1;
             //const x = lastCursorLocation[0];
             //const y = lastCursorLocation[1];
-            const x = 0;
-            const y = 0;
 
             data.push(x); data.push(y);
             
@@ -175,12 +178,13 @@ function main(shaders)
             data.push(0.0);
 
             // life
-            const life = 6.0 + Math.random();
+            const life = 10.0 + Math.random()*2.0;
             data.push(life);
 
             // velocity
-            data.push(0.1*(Math.random()-0.5));
-            data.push(0.1*(Math.random()-0.5));
+            let angle = 2.0* Math.PI *  i/nParticles;
+             data.push(0.1*Math.cos(angle)*(Math.tanh(angle * Math.random())-0.5));
+             data.push(0.23*Math.sin(angle)*(Math.tanh(angle * Math.random())-0.5));
         }
 
         inParticlesBuffer = gl.createBuffer();
@@ -215,28 +219,27 @@ function main(shaders)
         if(drawField) drawQuad();
         updateParticles(deltaTime);
         if(drawPoints) drawParticles(outParticlesBuffer, N_PARTICLES);
-        if(canDrawPlanets) drawPlanets();
+        //if(canDrawPlanets) drawPlanets(outParticlesBuffer);
 
         swapParticlesBuffers();
     }
 
-    function drawPlanets() {
-
-
-    }
-
     function updateParticles(deltaTime)
     {
+        gl.useProgram(updateProgram);
+
         // Setup uniforms
         const uDeltaTime = gl.getUniformLocation(updateProgram, "uDeltaTime");
 
-        const mouseLocation = gl.getUniformLocation(updateProgram, "mouseLocation");       
+        const mouseLocation = gl.getUniformLocation(updateProgram, "mouseLocation");
         
-        gl.useProgram(updateProgram);
+        const angle = gl.getUniformLocation(updateProgram, "beamAngle");
 
         gl.uniform1f(uDeltaTime, deltaTime);
 
         gl.uniform2f(mouseLocation, lastCursorLocation[0], lastCursorLocation[1]);
+
+        gl.uniform1f(angle, beamAngle);
         
         // Setup attributes
         const vPosition = gl.getAttribLocation(updateProgram, "vPosition");
@@ -272,7 +275,19 @@ function main(shaders)
         outParticlesBuffer = auxBuffer;
     }
 
+    function buildQuad() {
+        const vertices = [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0,
+                          -1.0, 1.0,  1.0, -1.0, 1.0,  1.0];
+        
+        quadBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
+
+    }
+
     function drawQuad() {
+
+        const SCALE = vec2(1.5, 1.5 * (canvas.height / canvas.width));
 
         gl.useProgram(fieldProgram);
 
@@ -295,23 +310,37 @@ function main(shaders)
     function drawParticles(buffer, nParticles)
     {
 
+        const vPosition = gl.getAttribLocation(renderProgram, "vPosition");
+        
         gl.useProgram(renderProgram);
 
         // Setup attributes
-        const vPosition = gl.getAttribLocation(renderProgram, "vPosition");
-        const fLeft = gl.getAttribLocation(renderProgram, "fLeft");
-        const fTotal = gl.getAttribLocation(renderProgram, "fTotal");
 
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
         gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 24, 0);
-        gl.vertexAttribPointer(fLeft, 1, gl.FLOAT, false, 24, 8);
-        gl.vertexAttribPointer(fTotal, 1, gl.FLOAT, false, 24, 12);
         gl.enableVertexAttribArray(vPosition);
-        gl.enableVertexAttribArray(fLeft);
-        gl.enableVertexAttribArray(fTotal);
 
         gl.drawArrays(gl.POINTS, 0, nParticles);
+    }
+
+    function drawPlanets(outParticlesBuffer) {
+        const vertices = [];
+        const N_VERTICES = 60;
+        for(let i = 0; i < N_VERTICES; i++){
+            let angle = 2.0 * Math.PI * i/N_VERTICES;
+            vertices.push(vec2(0.8 * Math.cos(angle), 0.8 * Math.sin(angle))); //Coordinates for the second polygon
+        }
+
+        gl.useProgram(fieldProgram);
+
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, outParticlesBuffer);
+        gl.enableVertexAttribArray(vertices);
+        gl.vertexAttribPointer(vertices, 2, gl.FLOAT, false, 0, 0);
+        
+        gl.drawArrays(gl.LINE_LOOP, 0, N_VERTICES);
+
     }
 }
 

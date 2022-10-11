@@ -1,9 +1,10 @@
-precision mediump float;
+precision highp float;
 
 /* Number of seconds (possibly fractional) that has passed since the last
    update step. */
 uniform float uDeltaTime;
 uniform vec2 mouseLocation;
+uniform float beamAngle;
 
 /* Inputs. These reflect the state of a single particle before the update. */
 
@@ -38,13 +39,12 @@ void main() {
    vLifeOut = vLife;
 
    vec2 accel = vec2(0.0);
-   vVelocityOut = vVelocity + accel * uDeltaTime;
+   vVelocityOut = vVelocity /*1.002 -> aumenta velocidade particulas*/ + accel * uDeltaTime;
       
    if (vAgeOut >= vLife) {
       vPositionOut = mouseLocation;
       vAgeOut = 0.0;
-      vLifeOut = vLife + 1.0;
-      vVelocityOut = vVelocity; 
+      
    }
 
 }
