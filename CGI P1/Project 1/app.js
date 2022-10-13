@@ -7,15 +7,18 @@ let inParticlesBuffer, outParticlesBuffer, quadBuffer;
 // Particle system constants
 
 const DIST_SCALE = 6371000.0;
+const AVG_DENSITY = 5510.0;
 
 // Total number of particles
 const N_PARTICLES = 10000;
 
 
-let uRadius = [];
-let uPosition = [];
+let radius = [];
+let position = [];
+let pMass = [];
 let counter = 0;
 let beamAngle = Math.PI;
+let beamOpen = 0.0;
 
 
 let drawPoints = true;
@@ -31,6 +34,8 @@ function main(shaders)
     // Generate the canvas element to fill the entire page
     const canvas = document.createElement("canvas");
     document.body.appendChild(canvas);
+
+    const SCALE = vec2(1.5, 1.5 * (canvas.height / canvas.width));
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -67,20 +72,22 @@ function main(shaders)
             case "PageDown":
                 break;
             case "ArrowUp":
-                if(beamAngle + 0.1 <= Math.PI)
-                    beamAngle += 0.1;
+                if(beamAngle + 0.05 <= Math.PI)
+                    beamAngle += 0.05;
                 else
                     beamAngle = Math.PI;
                 break;
             case "ArrowDown":
-                if(beamAngle - 0.1 >= -Math.PI)
-                    beamAngle -= 0.1;
+                if(beamAngle - 0.05 >= -Math.PI)
+                    beamAngle -= 0.05;
                 else
                     beamAngle = -Math.PI;
                 break;
             case "ArrowLeft":
+                    beamOpen += 0.05;
                 break;
             case "ArrowRight":
+                    beamOpen -= 0.05;
                 break;
             case 'q':
                 break;
@@ -98,21 +105,22 @@ function main(shaders)
                 break; 
             case 'Shift':
                 getCursor = true;
+                getScaledCursorPosition(canvas, event);
                 break;
         }
-    })
+    });
 
     window.addEventListener("keyup", function(event) {
         console.log(event.key);
         switch(event.key) {
             case 'Shift':
                 getCursor = false;
-        }})
+        }});
     
     canvas.addEventListener("mousedown", function(event) {
         const p = getCursorPosition(canvas, event);
         if(canDrawPlanets)
-        uPosition.push(p);
+        position.push(p);
     });
 
     canvas.addEventListener("mousemove", function(event) {
@@ -124,16 +132,13 @@ function main(shaders)
         const p = getCursorPosition(canvas, event);
 
         if(canDrawPlanets) {
-            uRadius.push(DIST_SCALE * Math.sqrt(Math.pow(p[0]-uPosition[counter][0],2) + Math.pow(p[1]-uPosition[counter][1],2)));
-            const pos = gl.getUniformLocation(fieldProgram, "uPosition[" + counter + "]");
-            const rad = gl.getUniformLocation(fieldProgram, "uRadius[" + counter + "]");
-            // Send the corresponding values to the GLSL program
-            gl.uniform2fv(pos, uPosition[counter]);
-            gl.uniform1f(rad, uRadius[counter]);
+            radius.push(DIST_SCALE * Math.sqrt(Math.pow(p[0]-position[counter][0],2) + Math.pow(p[1]-position[counter][1],2)));
+            const mass = (4 * Math.PI * Math.pow(radius[counter],3) * AVG_DENSITY) / 3;
+            pMass.push(mass);
             counter++;
             if(counter == 10)    canDrawPlanets = false;
         }
-    })
+    });
 
     function getCursorPosition(canvas, event) {
         const mx = event.offsetX;
@@ -177,13 +182,13 @@ function main(shaders)
             data.push(0.0);
 
             // life
-            const life = 10.0;
+            const life = 2.0;
             data.push(life);
 
             // velocity
-            let angle = 2.0* Math.PI *  i/nParticles;
-             data.push(0.1*Math.cos(angle)*(Math.tanh(angle * Math.random())-0.5));
-             data.push(0.23*Math.sin(angle)*(Math.tanh(angle * Math.random())-0.5));
+            let angle = 2.0 * Math.PI * (Math.random() - 1);
+            data.push(0.1*Math.cos(angle) * Math.tanh(Math.random()));
+            data.push(0.23*Math.sin(angle) * Math.tanh(Math.random()));
         }
 
         inParticlesBuffer = gl.createBuffer();
@@ -231,15 +236,33 @@ function main(shaders)
         const uDeltaTime = gl.getUniformLocation(updateProgram, "uDeltaTime");
 
         const mouseLocation = gl.getUniformLocation(updateProgram, "mouseLocation");
-        
+
         const angle = gl.getUniformLocation(updateProgram, "beamAngle");
+
+        const open = gl.getUniformLocation(updateProgram, "beamOpen");
+
+        const count = gl.getUniformLocation(updateProgram, "uCounter");
+
+        for(let i=0; i<counter; i++) {
+            // Get the location of the uniforms...
+            const uPosition = gl.getUniformLocation(updateProgram, "uPosition[" + i + "]");
+            const uMass = gl.getUniformLocation(updateProgram, "uMass[" + i + "]");
+            // Send the corresponding values to the GLSL program
+            gl.uniform2fv(uPosition, position[i]);
+            gl.uniform1f(uMass, pMass[i]);
+        }
 
         gl.uniform1f(uDeltaTime, deltaTime);
 
         gl.uniform2f(mouseLocation, lastCursorLocation[0], lastCursorLocation[1]);
 
         gl.uniform1f(angle, beamAngle);
-        
+
+        gl.uniform1f(open, beamOpen);
+
+        gl.uniform1i(count, counter);
+
+
         // Setup attributes
         const vPosition = gl.getAttribLocation(updateProgram, "vPosition");
         const vAge = gl.getAttribLocation(updateProgram, "vAge");
@@ -265,6 +288,7 @@ function main(shaders)
         gl.endTransformFeedback();
         gl.disable(gl.RASTERIZER_DISCARD);
         gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, null);
+
     }
 
     function swapParticlesBuffers()
@@ -286,11 +310,9 @@ function main(shaders)
 
     function drawQuad() {
 
-        const SCALE = vec2(1.5, 1.5 * (canvas.height / canvas.width));
-
         gl.useProgram(fieldProgram);
 
-        // Setup attributes
+        // Setup attributes\
         const vPosition = gl.getAttribLocation(fieldProgram, "vPosition");
 
         const uScale = gl.getUniformLocation(fieldProgram, "uScale");
@@ -308,6 +330,8 @@ function main(shaders)
 
     function drawParticles(buffer, nParticles)
     {
+
+        //fazer escalas
 
         const vPosition = gl.getAttribLocation(renderProgram, "vPosition");
         
@@ -343,10 +367,9 @@ function main(shaders)
     }
 }
 
-
-loadShadersFromURLS([
+    loadShadersFromURLS([
     "field-render.vert", "field-render.frag",
     "particle-update.vert", "particle-update.frag", 
     "particle-render.vert", "particle-render.frag"
     ]
-).then(shaders=>main(shaders));
+    ).then(shaders=>main(shaders));

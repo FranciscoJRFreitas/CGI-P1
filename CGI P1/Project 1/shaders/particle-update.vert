@@ -1,13 +1,20 @@
 precision highp float;
 
+const int MAX_PLANETS = 10;
 const float minLife = 2.0;
 const float maxLife = 20.0;
+const float G_CONSTANT = 0.0000000000667;
+const float DIST_SCALE = 6371000.0;
 
 /* Number of seconds (possibly fractional) that has passed since the last
    update step. */
 uniform float uDeltaTime;
 uniform vec2 mouseLocation;
 uniform float beamAngle;
+uniform float beamOpen;
+uniform float uMass[MAX_PLANETS];
+uniform vec2 uPosition[MAX_PLANETS];
+uniform int uCounter;
 
 /* Inputs. These reflect the state of a single particle before the update. */
 
@@ -34,8 +41,17 @@ highp float rand(vec2 co)
     return fract(sin(sn) * c);
 }
 
-vec2 net_force(vPosition) {
-   return vec2(0.0);
+vec2 net_force(vec2 vPosition) {
+   vec2 gfSum = vec2(0.0);
+
+   for(int i = 0; i < MAX_PLANETS; i++) {
+      if(i >= uCounter)
+         break;
+      vec2 r = vec2(uPosition[i].x - vPosition.x, uPosition[i].y - vPosition.y);
+      gfSum += normalize(r) * G_CONSTANT * uMass[i] / (pow(length(r)*DIST_SCALE, 2.0));
+   }
+
+   return gfSum;
 }
 
 void main() {
@@ -45,12 +61,13 @@ void main() {
    vAgeOut = vAge + uDeltaTime;
    vLifeOut = minLife + rand(vPosition) * (maxLife - minLife);
 
-   vVelocityOut = vVelocity + net_force(vPosition) * uDeltaTime;
-      
+   vVelocityOut = vVelocity + net_force(vPosition) * uDeltaTime; // v(t+h) = v(t) + F(t)/m1 * h
+
    if (vAgeOut >= vLife) {
       vPositionOut = mouseLocation;
       vAgeOut = 0.0;
-      
+      vLifeOut = minLife + rand(vPosition) * (maxLife - minLife);
+      vVelocityOut = vec2(0.1*cos(beamOpen + (2.0 * beamAngle * rand(vPosition))), 0.23*sin(beamOpen + (2.0 * beamAngle * rand(vPosition))));
    }
 
 }
