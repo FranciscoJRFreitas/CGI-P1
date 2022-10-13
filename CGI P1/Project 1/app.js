@@ -10,7 +10,7 @@ const DIST_SCALE = 6371000.0;
 const AVG_DENSITY = 5510.0;
 
 // Total number of particles
-const N_PARTICLES = 10000;
+const N_PARTICLES = 100000;
 
 
 let radius = [];
@@ -24,7 +24,7 @@ let beamOpen = 0.0;
 let drawPoints = true;
 let drawField = true;
 let canDrawPlanets = true;
-let getCursor = false;
+let shiftPressed = false;
 
 let time = undefined;
 let lastCursorLocation = vec2(0.0);
@@ -104,8 +104,7 @@ function main(shaders)
                 drawPoints  = !drawPoints;
                 break; 
             case 'Shift':
-                getCursor = true;
-                getScaledCursorPosition(canvas, event);
+                shiftPressed = true;
                 break;
         }
     });
@@ -114,7 +113,7 @@ function main(shaders)
         console.log(event.key);
         switch(event.key) {
             case 'Shift':
-                getCursor = false;
+                shiftPressed = false;
         }});
     
     canvas.addEventListener("mousedown", function(event) {
@@ -124,7 +123,6 @@ function main(shaders)
     });
 
     canvas.addEventListener("mousemove", function(event) {
-        if(getCursor)
         getScaledCursorPosition(canvas, event);
     });
 
@@ -187,8 +185,8 @@ function main(shaders)
 
             // velocity
             let angle = 2.0 * Math.PI * (Math.random() - 1);
-            data.push(0.1*Math.cos(angle) * Math.tanh(Math.random()));
-            data.push(0.23*Math.sin(angle) * Math.tanh(Math.random()));
+            data.push(Math.cos(angle)*Math.tanh(angle));
+            data.push(Math.sin(angle)*Math.tanh(angle));
         }
 
         inParticlesBuffer = gl.createBuffer();
@@ -223,24 +221,21 @@ function main(shaders)
         if(drawField) drawQuad();
         updateParticles(deltaTime);
         if(drawPoints) drawParticles(outParticlesBuffer, N_PARTICLES);
-        //if(canDrawPlanets) drawPlanets(outParticlesBuffer);
+        if(canDrawPlanets) drawPlanets(outParticlesBuffer);
 
         swapParticlesBuffers();
     }
 
     function updateParticles(deltaTime)
     {
+
         gl.useProgram(updateProgram);
 
         // Setup uniforms
         const uDeltaTime = gl.getUniformLocation(updateProgram, "uDeltaTime");
-
         const mouseLocation = gl.getUniformLocation(updateProgram, "mouseLocation");
-
         const angle = gl.getUniformLocation(updateProgram, "beamAngle");
-
         const open = gl.getUniformLocation(updateProgram, "beamOpen");
-
         const count = gl.getUniformLocation(updateProgram, "uCounter");
 
         for(let i=0; i<counter; i++) {
@@ -253,14 +248,11 @@ function main(shaders)
         }
 
         gl.uniform1f(uDeltaTime, deltaTime);
-
-        gl.uniform2f(mouseLocation, lastCursorLocation[0], lastCursorLocation[1]);
-
         gl.uniform1f(angle, beamAngle);
-
         gl.uniform1f(open, beamOpen);
-
         gl.uniform1i(count, counter);
+        if(shiftPressed)
+            gl.uniform2f(mouseLocation, lastCursorLocation[0], lastCursorLocation[1]);
 
 
         // Setup attributes
@@ -348,21 +340,23 @@ function main(shaders)
     }
 
     function drawPlanets(outParticlesBuffer) {
-        const vertices = [];
-        const N_VERTICES = 60;
-        for(let i = 0; i < N_VERTICES; i++){
-            let angle = 2.0 * Math.PI * i/N_VERTICES;
-            vertices.push(vec2(0.8 * Math.cos(angle), 0.8 * Math.sin(angle)));
-        }
 
         gl.useProgram(fieldProgram);
 
+        const count = gl.getUniformLocation(updateProgram, "uCounter");
+
+        for(let i=0; i<counter; i++) {
+            // Get the location of the uniforms...
+            const uPosition = gl.getUniformLocation(updateProgram, "uPosition[" + i + "]");
+            const uMass = gl.getUniformLocation(updateProgram, "uMass[" + i + "]");
+            // Send the corresponding values to the GLSL program
+            gl.uniform2fv(uPosition, position[i]);
+            gl.uniform1f(uMass, pMass[i]);
+        }
+
+        gl.uniform1i(count, counter);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, outParticlesBuffer);
-        gl.enableVertexAttribArray(vertices);
-        gl.vertexAttribPointer(vertices, 2, gl.FLOAT, false, 0, 0);
-        
-        gl.drawArrays(gl.LINE_LOOP, 0, N_VERTICES);
 
     }
 }

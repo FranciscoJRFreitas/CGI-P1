@@ -47,10 +47,9 @@ vec2 net_force(vec2 vPosition) {
    for(int i = 0; i < MAX_PLANETS; i++) {
       if(i >= uCounter)
          break;
-      vec2 r = vec2(uPosition[i].x - vPosition.x, uPosition[i].y - vPosition.y);
-      gfSum += normalize(r) * G_CONSTANT * uMass[i] / (pow(length(r)*DIST_SCALE, 2.0));
+      vec2 part_planet_vec = vec2(uPosition[i].x - vPosition.x, uPosition[i].y - vPosition.y);
+      gfSum += normalize(part_planet_vec) * G_CONSTANT * uMass[i] / (pow(length(part_planet_vec)*DIST_SCALE, 2.0));
    }
-
    return gfSum;
 }
 
