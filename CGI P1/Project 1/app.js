@@ -19,8 +19,8 @@ let pMass = [];
 let counter = 0;
 let beamAngle = Math.PI;
 let beamOpen = 0.0;
-let maxVelocity = 0.2;
 let minVelocity = 0.1;
+let maxVelocity = 0.2;
 let minLife = 2;
 let maxLife = 10;
 
@@ -78,7 +78,7 @@ function main(shaders)
                     minVelocity += 0.01;
                 break;
             case "PageDown":
-                if(shiftIsPressed)
+                if(shiftIsPressed && minVelocity - 0.01 > 0)
                     minVelocity -= 0.01;
                 else if (maxVelocity - 0.01 > minVelocity)
                     maxVelocity -= 0.01;

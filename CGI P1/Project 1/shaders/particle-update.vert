@@ -68,8 +68,8 @@ void main() {
       vPositionOut = uMouseLocation;
       vAgeOut = 0.0;
       vLifeOut = uMinLife + rand(vPosition) * (uMaxLife - uMinLife);
-      float velocity = uMinVelocity + rand(vPosition) * (uMaxVelocity - uMinVelocity);
-      vVelocityOut = vec2(velocity*cos(uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))), velocity*sin(uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))));
+      float velocity = uMinVelocity + rand(vVelocity) * (uMaxVelocity - uMinVelocity);
+      vVelocityOut = vec2(velocity * cos(uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))), velocity * sin(uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))));
    }
 
 }
