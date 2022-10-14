@@ -1,20 +1,22 @@
 precision highp float;
 
 const int MAX_PLANETS = 10;
-const float minLife = 2.0;
-const float maxLife = 20.0;
 const float G_CONSTANT = 0.0000000000667;
 const float DIST_SCALE = 6371000.0;
 
 /* Number of seconds (possibly fractional) that has passed since the last
    update step. */
 uniform float uDeltaTime;
-uniform vec2 mouseLocation;
-uniform float beamAngle;
-uniform float beamOpen;
+uniform vec2 uMouseLocation;
+uniform float uBeamAngle;
+uniform float uBeamOpen;
 uniform float uMass[MAX_PLANETS];
 uniform vec2 uPosition[MAX_PLANETS];
 uniform int uCounter;
+uniform float uMinVelocity;
+uniform float uMaxVelocity;
+uniform float uMinLife;
+uniform float uMaxLife;
 
 /* Inputs. These reflect the state of a single particle before the update. */
 
@@ -58,15 +60,16 @@ void main() {
    /* Update parameters according to our simple rules.*/
    vPositionOut = vPosition + vVelocity * uDeltaTime; //p(t+h) = p(t) + v(t) * h 
    vAgeOut = vAge + uDeltaTime;
-   vLifeOut = minLife + rand(vPosition) * (maxLife - minLife);
+   vLifeOut = uMinLife + rand(vPosition) * (uMaxLife - uMinLife);
 
    vVelocityOut = vVelocity + net_force(vPosition) * uDeltaTime; // v(t+h) = v(t) + F(t)/m1 * h
 
    if (vAgeOut >= vLife) {
-      vPositionOut = mouseLocation;
+      vPositionOut = uMouseLocation;
       vAgeOut = 0.0;
-      vLifeOut = minLife + rand(vPosition) * (maxLife - minLife);
-      vVelocityOut = vec2(0.1*cos(beamOpen + (2.0 * beamAngle * rand(vPosition))), 0.23*sin(beamOpen + (2.0 * beamAngle * rand(vPosition))));
+      vLifeOut = uMinLife + rand(vPosition) * (uMaxLife - uMinLife);
+      float velocity = uMinVelocity + rand(vPosition) * (uMaxVelocity - uMinVelocity);
+      vVelocityOut = vec2(velocity*cos(uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))), velocity*sin(uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))));
    }
 
 }
