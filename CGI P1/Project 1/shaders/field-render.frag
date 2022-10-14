@@ -32,5 +32,5 @@ void main() {
     vec2 netForce = net_force(fPosition);
     float h = atan(netForce.y, netForce.x) / (2.0 * PI);
     vec3 rgb = hsv2rgb(vec3(h,1.0,1.0));
-    gl_FragColor = vec4(rgb, length(vec2(net_force(fPosition))));
+    gl_FragColor = vec4(rgb, length(vec2(net_force(fPosition)))) + vec4(0.0,0.0,0.0, mod(1.0 - (1.0/net_force(fPosition)), net_force(fPosition)));
 }

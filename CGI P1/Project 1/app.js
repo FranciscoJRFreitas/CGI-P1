@@ -90,10 +90,10 @@ function main(shaders)
                     beamAngle = Math.PI;
                 break;
             case "ArrowDown":
-                if(beamAngle - 0.05 >= -Math.PI)
+                if(beamAngle - 0.05 >= 0)
                     beamAngle -= 0.05;
                 else
-                    beamAngle = -Math.PI;
+                    beamAngle = 0;
                 break;
             case "ArrowLeft":
                     beamOpen += 0.05;

@@ -3,6 +3,7 @@ precision highp float;
 const int MAX_PLANETS = 10;
 const float G_CONSTANT = 0.0000000000667;
 const float DIST_SCALE = 6371000.0;
+const float PI = 3.14159265358979;
 
 /* Number of seconds (possibly fractional) that has passed since the last
    update step. */
@@ -69,7 +70,7 @@ void main() {
       vAgeOut = 0.0;
       vLifeOut = uMinLife + rand(vPosition) * (uMaxLife - uMinLife);
       float velocity = uMinVelocity + rand(vVelocity) * (uMaxVelocity - uMinVelocity);
-      vVelocityOut = vec2(velocity * cos(uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))), velocity * sin(uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))));
+      vVelocityOut = vec2(velocity * cos(-PI + uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))), velocity * sin(-PI + uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))));
    }
 
 }
