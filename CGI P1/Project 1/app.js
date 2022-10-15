@@ -33,8 +33,8 @@ let blackHole = 0;
 
 let time = undefined;
 let lastCursorLocation = vec2(0.0);
-let x = 0.0;
-let y = 0.0;
+let x = 0.000000000001;
+let y = 0.000000000001; //For some reason, when the orgin initializes at (0,0), it rounds to a value that doesn't give velocity to particles.
 
 function main(shaders)
 {
