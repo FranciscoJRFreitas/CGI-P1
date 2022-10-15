@@ -138,7 +138,7 @@ function main(shaders)
             case '9':
                 drawPoints  = !drawPoints;
                 break; 
-            case 'b':
+            case 'b':                   // Extra funtionality (Draws blackholes)
                 if(blackHole == 0)
                     blackHole = 1;
                 else 
@@ -258,7 +258,7 @@ function main(shaders)
         if(drawField) drawQuad();
         updateParticles(deltaTime);
         if(drawPoints) drawParticles(outParticlesBuffer, N_PARTICLES);
-        if(canDrawPlanets) drawPlanets();
+        drawPlanets();
 
         swapParticlesBuffers();
     }

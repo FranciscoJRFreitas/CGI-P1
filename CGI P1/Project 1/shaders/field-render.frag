@@ -34,6 +34,7 @@ void main() {
       netForce = vec2(0.0);
     if(uBlackHole == 1)
       gl_FragColor = vec4(0.0,0.0,0.0, length(netForce));
+
     else
       gl_FragColor = vec4(rgb, length(netForce));// + vec4(0.0,0.0,0.0, mod(1.0 - (1.0/net_force(fPosition)), net_force(fPosition)));
 }
