@@ -4,6 +4,7 @@ attribute vec2 vPosition;
 attribute float vAge;
 attribute float vLife;
 attribute vec2 vVelocity;
+
 varying float fLeft;
 varying float fTotal;
 uniform vec2 uScale;

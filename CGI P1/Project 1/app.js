@@ -206,8 +206,8 @@ function main(shaders)
 
         for(let i=0; i<nParticles; ++i) {
             // position
-            const x = 3*Math.random() - 1.5;
-            const y = 3*Math.random() - 1.5;
+            const x = 2 * SCALE[0] * Math.random() - SCALE[0];
+            const y = 2 * SCALE[1] * Math.random() - SCALE[1];
             //const x = lastCursorLocation[0];
             //const y = lastCursorLocation[1];
 

@@ -18,7 +18,7 @@ uniform float uMaxVelocity;
 uniform float uMinLife;
 uniform float uMaxLife;
 uniform int uBlackHole;
-highp vec2 avgPos;
+vec2 avgPos;
 
 /* Inputs. These reflect the state of a single particle before the update. */
 
