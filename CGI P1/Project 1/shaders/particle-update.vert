@@ -13,11 +13,12 @@ uniform float uBeamAngle;
 uniform float uBeamOpen;
 uniform float uMass[MAX_PLANETS];
 uniform vec2 uPosition[MAX_PLANETS];
-uniform int uCounter;
 uniform float uMinVelocity;
 uniform float uMaxVelocity;
 uniform float uMinLife;
 uniform float uMaxLife;
+uniform int uBlackHole;
+highp vec2 avgPos;
 
 /* Inputs. These reflect the state of a single particle before the update. */
 
@@ -46,13 +47,19 @@ highp float rand(vec2 co)
 
 vec2 net_force(vec2 vPosition) {
    vec2 gfSum = vec2(0.0);
-
+   float totalMass = 0.0;
+   avgPos = vec2(0.0);
    for(int i = 0; i < MAX_PLANETS; i++) {
-      if(i >= uCounter)
-         break;
       vec2 part_planet_vec = vec2(uPosition[i].x - vPosition.x, uPosition[i].y - vPosition.y);
       gfSum += normalize(part_planet_vec) * G_CONSTANT * uMass[i] / (pow(length(part_planet_vec)*DIST_SCALE, 2.0));
+      avgPos += uPosition[i] * uMass[i];
+      totalMass += uMass[i];
    }
+   /*When turning on uBlackHole, particles stay in the average position of black holes considering their mass.
+   If the black hole is bigger (weighs more) the particle flow is closer to it, compared to a smaller one. */
+   avgPos = avgPos / vec2(totalMass);
+   if(uBlackHole == 1)
+      gfSum = vec2(1.0/0.0001); //Close to the black hole center, the acceleration gets close to infinity.
    return gfSum;
 }
 
@@ -61,16 +68,23 @@ void main() {
    /* Update parameters according to our simple rules.*/
    vPositionOut = vPosition + vVelocity * uDeltaTime; //p(t+h) = p(t) + v(t) * h 
    vAgeOut = vAge + uDeltaTime;
-   vLifeOut = uMinLife + rand(vPosition) * (uMaxLife - uMinLife);
+   vLifeOut = uMinLife + rand(vPosition * uDeltaTime) * (uMaxLife - uMinLife);
 
    vVelocityOut = vVelocity + net_force(vPosition) * uDeltaTime; // v(t+h) = v(t) + F(t)/m1 * h
 
+   float minAngle = (-uBeamAngle + uBeamOpen);
+   float maxAngle = (uBeamAngle + uBeamOpen);
+   float uAngle = minAngle + rand(vPosition) * (maxAngle - minAngle); // (-beta + alpha), (beta + alpha)
+
    if (vAgeOut >= vLife) {
-      vPositionOut = uMouseLocation;
+      if(uBlackHole == 1)
+         vPositionOut = avgPos;
+      else
+         vPositionOut = uMouseLocation;
       vAgeOut = 0.0;
       vLifeOut = uMinLife + rand(vPosition) * (uMaxLife - uMinLife);
-      float velocity = uMinVelocity + rand(vVelocity) * (uMaxVelocity - uMinVelocity);
-      vVelocityOut = vec2(velocity * cos(-PI + uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))), velocity * sin(-PI + uBeamOpen + (2.0 * uBeamAngle * rand(vPosition))));
+      float velocity = uMinVelocity + rand(vPosition * uDeltaTime) * (uMaxVelocity - uMinVelocity);
+      vVelocityOut = vec2(velocity * cos(uAngle), velocity * sin(uAngle));
    }
 
 }
