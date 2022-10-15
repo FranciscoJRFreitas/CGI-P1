@@ -8,7 +8,7 @@ const float PI = 3.14159265358979; // Value of PI
 
 uniform float uDeltaTime;  // Number of seconds (possibly fractional) that has passed since the lastupdate step
 uniform vec2 uMouseLocation; // Mouse Location
-uniform float uBeamAngle; // Angle of the Particle
+uniform float uBeamAngle; // Beta angle
 uniform float uBeamOpen; // Alpha angle
 uniform float uMass[MAX_PLANETS]; // Vector who stores the mass of the planets
 uniform vec2 uPosition[MAX_PLANETS]; // Vector who stores the position of the planets
@@ -46,7 +46,6 @@ highp float rand(vec2 co)
 vec2 net_force(vec2 vPosition) {
    vec2 gfSum = vec2(0.0);
    float totalMass = 0.0;
-   avgPos = vec2(0.0);
    for(int i = 0; i < MAX_PLANETS; i++) {
       vec2 part_planet_vec = vec2(uPosition[i].x - vPosition.x, uPosition[i].y - vPosition.y);
       gfSum += normalize(part_planet_vec) * G_CONSTANT * uMass[i] / (pow(length(part_planet_vec)*DIST_SCALE, 2.0));

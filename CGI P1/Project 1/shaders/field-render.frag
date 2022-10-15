@@ -36,3 +36,4 @@ void main() {
       gl_FragColor = vec4(0.0,0.0,0.0, length(netForce));
     else
       gl_FragColor = vec4(rgb, length(netForce));
+}

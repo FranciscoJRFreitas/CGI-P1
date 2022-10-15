@@ -5,7 +5,6 @@ import { vec2, flatten, subtract, dot, scale } from '../libs/MV.js';
 let inParticlesBuffer, outParticlesBuffer, quadBuffer;
 
 // Particle system constants
-
 const DIST_SCALE = 6371000.0;
 const AVG_DENSITY = 5510.0;
 
@@ -17,6 +16,7 @@ let radius = [];
 let position = [];
 let pMass = [];
 let counter = 0;
+let frontCounter = 0;
 let beamAngle = Math.PI;
 let beamOpen = 0.0;
 let minVelocity = 0.1;
@@ -28,7 +28,7 @@ let maxLife = 10;
 let drawPoints = true;
 let drawField = true;
 let canDrawPlanets = true;
-let shiftIsPressed = false;
+let mouseIsDown = false;
 let blackHole = 0;
 
 let time = undefined;
@@ -75,13 +75,13 @@ function main(shaders)
         console.log(event.key);
         switch(event.key) {
             case "PageUp":
-                if(!shiftIsPressed)
+                if(!event.shiftKey)
                     maxVelocity += 0.01;
                 else if (minVelocity + 0.01 < maxVelocity)
                     minVelocity += 0.01;
                 break;
             case "PageDown":
-                if(shiftIsPressed && minVelocity - 0.01 > 0)
+                if(event.shiftKey && minVelocity - 0.01 > 0)
                     minVelocity -= 0.01;
                 else if (maxVelocity - 0.01 > minVelocity)
                     maxVelocity -= 0.01;
@@ -145,25 +145,21 @@ function main(shaders)
                     blackHole = 0;
                 break;
             case 'Shift':
-                shiftIsPressed = true;
                 x = lastCursorLocation[0];
                 y = lastCursorLocation[1];
                 break;
         }
     });
-
-    window.addEventListener("keyup", function(event) {
-        console.log(event.key);
-        switch(event.key) {
-            case 'Shift':
-                shiftIsPressed = false;
-        }
-    });
     
     canvas.addEventListener("mousedown", function(event) {
+        mouseIsDown = true;
         const p = getScaledCursorPosition(canvas, event);
-        if(canDrawPlanets)
-        position.push(p);
+        if(canDrawPlanets) {
+        position[counter] = p;
+        radius[counter] = 0;
+        pMass[counter] = 0;
+        frontCounter++;
+        }
     });
 
     canvas.addEventListener("mousemove", function(event) {
@@ -171,18 +167,22 @@ function main(shaders)
             x = lastCursorLocation[0];
             y = lastCursorLocation[1];
         }
-        getScaledCursorPosition(canvas, event);
+        const p = getScaledCursorPosition(canvas, event);
+        if(mouseIsDown){
+            if(canDrawPlanets) {
+                radius[counter] = (DIST_SCALE * Math.sqrt(Math.pow(p[0]-position[counter][0],2) + Math.pow(p[1]-position[counter][1],2)));
+                const mass = (4 * Math.PI * Math.pow(radius[counter],3) * AVG_DENSITY) / 3;
+                pMass[counter] = mass;
+
+                if(counter == 10)    canDrawPlanets = false;
+            }
+        }
     });
 
     canvas.addEventListener("mouseup", function(event) {
+        mouseIsDown = false;
         const p = getScaledCursorPosition(canvas, event);
-        if(canDrawPlanets) {
-            radius.push(DIST_SCALE * Math.sqrt(Math.pow(p[0]-position[counter][0],2) + Math.pow(p[1]-position[counter][1],2)));
-            const mass = (4 * Math.PI * Math.pow(radius[counter],3) * AVG_DENSITY) / 3;
-            pMass.push(mass);
-            counter++;
-            if(counter == 10)    canDrawPlanets = false;
-        }
+        counter++;
     });
 
     function getScaledCursorPosition(canvas, event) {
@@ -273,14 +273,13 @@ function main(shaders)
         const uMouseLocation = gl.getUniformLocation(updateProgram, "uMouseLocation");
         const uAngle = gl.getUniformLocation(updateProgram, "uBeamAngle");
         const uOpen = gl.getUniformLocation(updateProgram, "uBeamOpen");
-        const uCount = gl.getUniformLocation(updateProgram, "uCounter");
         const uMinVelocity = gl.getUniformLocation(updateProgram, "uMinVelocity");
         const uMaxVelocity = gl.getUniformLocation(updateProgram, "uMaxVelocity");
         const uMinLife = gl.getUniformLocation(updateProgram, "uMinLife");
         const uMaxLife = gl.getUniformLocation(updateProgram, "uMaxLife");
         const uBlackHole = gl.getUniformLocation(updateProgram, "uBlackHole");
 
-        for(let i=0; i<counter; i++) {
+        for(let i=0; i< frontCounter; i++) {
             // Get the location of the uniforms...
             const uPosition = gl.getUniformLocation(updateProgram, "uPosition[" + i + "]");
             const uMass = gl.getUniformLocation(updateProgram, "uMass[" + i + "]");
@@ -292,7 +291,6 @@ function main(shaders)
         gl.uniform1f(uDeltaTime, deltaTime);
         gl.uniform1f(uAngle, beamAngle);
         gl.uniform1f(uOpen, beamOpen);
-        gl.uniform1i(uCount, counter);
         gl.uniform1f(uMinVelocity, minVelocity);
         gl.uniform1f(uMaxVelocity, maxVelocity);
         gl.uniform1f(uMinLife, minLife);
@@ -371,8 +369,6 @@ function main(shaders)
 
         gl.useProgram(renderProgram);
 
-        //fazer escalas
-
         const vPosition = gl.getAttribLocation(renderProgram, "vPosition");
 
         const uScale = gl.getUniformLocation(renderProgram, "uScale");
@@ -393,10 +389,9 @@ function main(shaders)
 
         gl.useProgram(fieldProgram);
 
-        const count = gl.getUniformLocation(fieldProgram, "uCounter");
         const uBlackHole = gl.getUniformLocation(fieldProgram, "uBlackHole");
 
-        for(let i=0; i<counter; i++) {
+        for(let i=0; i<frontCounter; i++) {
             // Get the location of the uniforms...
             const uPosition = gl.getUniformLocation(fieldProgram, "uPosition[" + i + "]");
             const uMass = gl.getUniformLocation(fieldProgram, "uMass[" + i + "]");
@@ -406,7 +401,6 @@ function main(shaders)
         }
 
         gl.uniform1i(uBlackHole, blackHole);
-        gl.uniform1i(count, counter);
     }
 }
 
