@@ -18,7 +18,6 @@ uniform float uMaxVelocity;
 uniform float uMinLife;
 uniform float uMaxLife;
 uniform int uBlackHole;
-vec2 avgPos;
 
 /* Inputs. These reflect the state of a single particle before the update. */
 
@@ -52,14 +51,9 @@ vec2 net_force(vec2 vPosition) {
    for(int i = 0; i < MAX_PLANETS; i++) {
       vec2 part_planet_vec = vec2(uPosition[i].x - vPosition.x, uPosition[i].y - vPosition.y);
       gfSum += normalize(part_planet_vec) * G_CONSTANT * uMass[i] / (pow(length(part_planet_vec)*DIST_SCALE, 2.0));
-      avgPos += uPosition[i] * uMass[i];
-      totalMass += uMass[i];
    }
-   /*When turning on uBlackHole, particles stay in the average position of black holes considering their mass.
-   If the black hole is bigger (weighs more) the particle flow is closer to it, compared to a smaller one. */
-   avgPos = avgPos / vec2(totalMass);
    if(uBlackHole == 1)
-      gfSum = vec2(1.0/0.0001); //Close to the black hole center, the acceleration gets close to infinity.
+      gfSum = -gfSum; //Close to the black hole center, the particles get repelled.
    return gfSum;
 }
 
@@ -77,10 +71,7 @@ void main() {
    float uAngle = minAngle + rand(vPosition) * (maxAngle - minAngle); // (-beta + alpha), (beta + alpha)
 
    if (vAgeOut >= vLife) {
-      if(uBlackHole == 1)
-         vPositionOut = avgPos;
-      else
-         vPositionOut = uMouseLocation;
+      vPositionOut = uMouseLocation;
       vAgeOut = 0.0;
       vLifeOut = uMinLife + rand(vPosition) * (uMaxLife - uMinLife);
       float velocity = uMinVelocity + rand(vPosition * uDeltaTime) * (uMaxVelocity - uMinVelocity);
