@@ -138,8 +138,8 @@ function main(shaders)
             case '9':
                 drawPoints  = !drawPoints;
                 break; 
-            case 'b':                   // Extra funtionality (Draws blackholes)
-                if(blackHole == 0)
+            case 'b':                   // Extra funtionality (Draws blackholes) 
+                if(blackHole == 0)     // And repells particles away from its center
                     blackHole = 1;
                 else 
                     blackHole = 0;

@@ -1,23 +1,22 @@
 precision highp float;
 
-const int MAX_PLANETS = 10;
-const float G_CONSTANT = 0.0000000000667;
-const float DIST_SCALE = 6371000.0;
-const float PI = 3.14159265358979;
+const int MAX_PLANETS = 10; // Maximum number of planets that can be drawn
+const float G_CONSTANT = 0.0000000000667; // Value of universal gravity constant
+const float DIST_SCALE = 6371000.0; // Factor scale
+const float PI = 3.14159265358979; // Value of PI
 
-/* Number of seconds (possibly fractional) that has passed since the last
-   update step. */
-uniform float uDeltaTime;
-uniform vec2 uMouseLocation;
-uniform float uBeamAngle;
-uniform float uBeamOpen;
-uniform float uMass[MAX_PLANETS];
-uniform vec2 uPosition[MAX_PLANETS];
-uniform float uMinVelocity;
-uniform float uMaxVelocity;
-uniform float uMinLife;
-uniform float uMaxLife;
-uniform int uBlackHole;
+
+uniform float uDeltaTime;  // Number of seconds (possibly fractional) that has passed since the lastupdate step
+uniform vec2 uMouseLocation; // Mouse Location
+uniform float uBeamAngle; // Angle of the Particle
+uniform float uBeamOpen; // Alpha angle
+uniform float uMass[MAX_PLANETS]; // Vector who stores the mass of the planets
+uniform vec2 uPosition[MAX_PLANETS]; // Vector who stores the position of the planets
+uniform float uMinVelocity; // Minimun velocity of the velocity
+uniform float uMaxVelocity; // Maximun velocity of the velocity
+uniform float uMinLife; // Minimun life of the particle
+uniform float uMaxLife; // Maximun life of the particle
+uniform int uBlackHole; // Black Hole
 
 /* Inputs. These reflect the state of a single particle before the update. */
 
@@ -27,10 +26,10 @@ attribute float vLife;                 // when it is supposed to die
 attribute vec2 vVelocity;              // actual speed
 
 /* Outputs. These mirror the inputs. These values will be captured into our transform feedback buffer! */
-varying vec2 vPositionOut;
-varying float vAgeOut;
-varying float vLifeOut;
-varying vec2 vVelocityOut;
+varying vec2 vPositionOut;  // Next instant position
+varying float vAgeOut;  // Next instant age
+varying float vLifeOut; // Next instant life
+varying vec2 vVelocityOut; // Next instant velocity
 
 
 // generates a pseudo random number that is a function of the argument. The argument needs to be constantly changing from call to call to generate different results

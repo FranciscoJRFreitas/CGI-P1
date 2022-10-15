@@ -1,13 +1,13 @@
 precision mediump float;
 
-attribute vec2 vPosition;
-attribute float vAge;
-attribute float vLife;
-attribute vec2 vVelocity;
+attribute vec2 vPosition; // Position of the particle
+attribute float vAge; // Age of the particle
+attribute float vLife; // Life of the particle
+attribute vec2 vVelocity; // Velociry of the particle
 
-varying float fLeft;
-varying float fTotal;
-uniform vec2 uScale;
+varying float fTotal; // Total life time of particle
+varying float fLeft; // Current life time of particle
+uniform vec2 uScale; // Scale
 
 void main() {
   gl_PointSize = 2.0;
